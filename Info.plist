@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Lives at the project root (NOT inside the file-synchronized earpiece/
+	     folder) so Xcode doesn't also try to copy it as a bundle resource.
+	     Holds only the keys the build-setting generator can't add; the rest of
+	     Info.plist is still generated (GENERATE_INFOPLIST_FILE = YES) and merged
+	     into this file at build time.
+
+	     UIBackgroundModes/audio keeps the silent keep-alive (and recording)
+	     running when the screen locks or the phone is pocketed — without it iOS
+	     suspends the app and headphone taps stop reaching us. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+</dict>
+</plist>

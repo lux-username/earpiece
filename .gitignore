@@ -1,0 +1,22 @@
+# Secrets — never commit the real API key. Copy Secrets.example.swift to
+# Secrets.swift and paste your own key locally (see README).
+earpiece/Secrets.swift
+
+# macOS
+.DS_Store
+
+# Xcode — user-specific state and build output
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.swiftpm/
+.build/
