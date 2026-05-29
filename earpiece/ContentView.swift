@@ -39,6 +39,7 @@ final class EarpieceController: ObservableObject {
     @Published var status: Status = .armed
     @Published var events: [String] = []          // newest-first on-screen log
     @Published var lastRecordingURL: URL?          // so we can play it back to verify
+    @Published var demoFiles: [URL] = []           // DEMO BUILD: last captured exchange, for Export
 
     // Keep-alive: a silent audio loop that keeps us eligible for remote commands.
     private let audioEngine = AVAudioEngine()
@@ -451,8 +452,10 @@ final class EarpieceController: ObservableObject {
             log("Speaking…")
             onMain { self.prepareAnswerPlayback() }     // clear any prior answer, ensure engine
             var firstAudioAt: Date?
+            var answerPCM = Data()                       // DEMO BUILD: keep the answer audio to save
             for try await chunk in assistant.synthesizeStream(answer) {
                 if firstAudioAt == nil { firstAudioAt = Date() }   // first chunk = audio can start
+                answerPCM.append(chunk)                  // DEMO BUILD: accumulate (no effect on playback)
                 if let buffer = makePCMBuffer(from: chunk) {
                     onMain { self.playAnswerBuffer(buffer) }
                 }
@@ -461,6 +464,17 @@ final class EarpieceController: ObservableObject {
             log(String(format: "⏱ STT %.1fs · think %.1fs · TTS→first audio %.1fs · total %.1fs",
                        t1.timeIntervalSince(t0), t2.timeIntervalSince(t1),
                        firstAudio.timeIntervalSince(t2), firstAudio.timeIntervalSince(t0)))
+
+            // DEMO BUILD ONLY: persist the full exchange (your query audio + the answer
+            // audio + transcript) so it can be dropped over a screen recording. This
+            // block does not exist on `main`.
+            let files = DemoCapture.saveSession(queryAudio: url, answerPCM: answerPCM,
+                                                sampleRate: assistant.ttsSampleRate,
+                                                question: question, answer: answer)
+            onMain {
+                self.demoFiles = files
+                self.log("Demo capture saved (\(files.count) files) — tap Export below.")
+            }
             returnToArmed()
         } catch {
             // Any failed step lands here; the error's message is the log line.
@@ -643,10 +657,28 @@ struct ContentView: View {
                 }
             }
 
+            // DEMO BUILD ONLY: export the last captured exchange (query audio + answer
+            // audio + transcript) via the share sheet — AirDrop to the Mac, save to
+            // Files, etc. — to composite into the demo video. Absent on `main`.
+            if !controller.demoFiles.isEmpty {
+                ShareLink(items: controller.demoFiles) {
+                    Label("Export demo capture", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.purple)
+            }
+
             List(controller.events, id: \.self) { event in
                 Text(event)
                     .font(.system(.body, design: .monospaced))
             }
+
+            // DEMO BUILD marker — small and at the bottom so it's easy to crop out of a
+            // screen recording, but present so this build is never mistaken for the
+            // shipping app (which records nothing).
+            Text("demo build · capturing exchanges")
+                .font(.caption2)
+                .foregroundStyle(.purple.opacity(0.7))
 
             // Unobtrusive switch to reveal the on-screen testing controls above.
             Toggle("Testing mode", isOn: $testingMode)

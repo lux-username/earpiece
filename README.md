@@ -26,7 +26,7 @@ Built in Swift / SwiftUI, talking to OpenAI's API behind a thin provider seam (`
 ## Build it yourself
 
 1. Open `earpiece.xcodeproj` in Xcode (iOS 26+, tested on iPhone + Sony LinkBuds Open).
-2. Copy `earpiece/Secrets.example.swift` to `earpiece/Secrets.swift` and paste your own OpenAI API key. `Secrets.swift` is git-ignored — your key never leaves your machine.
+2. Copy `Secrets.example.swift` (in the repo root) into the `earpiece/` folder as `Secrets.swift`, and paste your own OpenAI API key. `earpiece/Secrets.swift` is git-ignored — your key never leaves your machine.
 3. Build and run on a device (the earpiece-tap flow needs real Bluetooth hardware; the on-screen "Testing mode" toggle drives the loop without it).
 
 ## Status
